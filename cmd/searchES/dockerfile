@@ -15,4 +15,4 @@ ENV DB_NAME $DB_NAME
 RUN go mod download
 RUN go get github.com/githubnemo/CompileDaemon
 
-ENTRYPOINT CompileDaemon --build="go build /app/cmd/searchService/main.go" --command=./main
+ENTRYPOINT CompileDaemon --build="go build /app/cmd/searchES/main.go" --command=./main
