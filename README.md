@@ -4,7 +4,7 @@
 
 ## Overview
 
-This project contains services to sync data between MongoDB and ElasticSearch. The following list has the all the solution components and their description:
+This project contains services to sync data between MongoDB and ElasticSearch. The following list contains all solution components and their description:
 
 - `searchService`: this service integrates with ElasticSearch with basic search queries.
 - `updateESService`: this service listens for changes on a MongoDB collection using change streams and updates the ElasticSearch index. Whenever an update to ElasticSearch fails, it will store the update on another collection so it can be processed at a later time.
@@ -49,8 +49,8 @@ docker build -t search-es:1.0 --rm -f ./cmd/searchService/dockerfile . --build-a
 **Run:**
 
 ```bash
-docker run -d update-es:1.0 --env-file .env
-docker run -d search-es:1.0 --env-file .env
+docker run -d --name update --env-file .env --network go-es-mdb_mdbn --rm update-es:1.0
+docker run -d --name search --env-file .env --network go-es-mdb_mdbn --rm search-es:1.0
 ```
 
 **Cleanup:**
