@@ -10,7 +10,7 @@ This project contains services to sync data between MongoDB and ElasticSearch. T
 - `updateESService`: this service listens for changes on a MongoDB collection using change streams and updates the ElasticSearch index. Whenever an update to ElasticSearch fails, it will store the update on another collection so it can be processed at a later time.
 - `retryESUpdate`: this cron job will retry all failed updates to ElasticSearch every two hours.
 
-After updating a record in MongoDB, the `updateESService` will detect the change and will send the update to ElasticSearch.s
+After updating a record in MongoDB, the `updateESService` will detect the change and will send the update to ElasticSearch.
 
 ## Setup
 
