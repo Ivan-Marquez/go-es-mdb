@@ -1,0 +1,18 @@
+FROM golang:latest
+
+WORKDIR /app
+
+COPY ./ ./
+
+ARG ELASTICSEARCH_URL
+ARG MDB_URL
+ARG DB_NAME
+
+ENV ELASTICSEARCH_URL $ELASTICSEARCH_URL
+ENV MDB_URL $MDB_URL
+ENV DB_NAME $DB_NAME
+
+RUN go mod download
+RUN go get github.com/githubnemo/CompileDaemon
+
+ENTRYPOINT CompileDaemon --build="go build /app/cmd/updateESService/main.go /app/cmd/updateESService/changeStreamHandler.go" --command=./main
