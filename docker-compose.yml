@@ -18,6 +18,8 @@ services:
     restart: always
     expose:
       - 27017
+    networks:
+      - mdbn
     ports:
       - 27017:27017
     volumes:
@@ -35,3 +37,6 @@ services:
 volumes:
   es-data:
   db-data:
+
+networks:
+  mdbn:
