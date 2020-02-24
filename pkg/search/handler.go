@@ -1,6 +1,7 @@
 package search
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,9 +19,16 @@ type Handler struct {
 // search term results
 func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	// TODO: search term on ElasticSearch and write response
-	w.Write([]byte("Initial response"))
+
+	switch r.Method {
+	case http.MethodPost:
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Initial response"))
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Bad request")
+	}
+
 }
 
 // SetupRoutes registers handles for API endpoints
