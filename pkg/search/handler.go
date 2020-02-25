@@ -33,8 +33,6 @@ func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		fallthrough
-	case http.MethodPost:
 		users, err := ESSearch(h.Client, term)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
