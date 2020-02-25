@@ -6,13 +6,42 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
+	"os"
 	"sync"
 
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/ivan-marquez/es-mdb/pkg/storage"
+	"go.mongodb.org/mongo-driver/bson"
 )
+
+func getUsers(store *storage.Storage) ([]*User, error) {
+	client := store.DBClient
+	db := client.Database(os.Getenv("DB_NAME"))
+
+	var users []*User
+	cur, err := db.Collection("user").Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		return nil, err
+	}
+
+	for cur.Next(context.TODO()) {
+		var doc User
+		err := cur.Decode(&doc)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		users = append(users, &doc)
+	}
+
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	cur.Close(context.TODO())
+
+	return users, nil
+}
 
 func importUsersDataES(store *storage.Storage, users []*User) error {
 	var (
@@ -37,12 +66,10 @@ func importUsersDataES(store *storage.Storage, users []*User) error {
 	}
 	// Print client and server version numbers.
 	log.Printf("Importing data to ElasticSearch")
-	log.Printf("Client: %s", elasticsearch.Version)
-	log.Printf("Server: %s", r["version"].(map[string]interface{})["number"])
 
-	md, err := getMockData()
+	md, err := getUsers(store)
 	if err != nil {
-		return fmt.Errorf("Error getting mock data: %v", err)
+		return fmt.Errorf("Error getting data from MongoDB: %v", err)
 	}
 
 	for i, user := range md {
@@ -57,7 +84,7 @@ func importUsersDataES(store *storage.Storage, users []*User) error {
 			// Set up the request object.
 			req := esapi.IndexRequest{
 				Index:      "users",
-				DocumentID: strconv.Itoa(i + 1),
+				DocumentID: u.ID.Hex(),
 				Body:       bytes.NewReader(body),
 				Refresh:    "true",
 			}

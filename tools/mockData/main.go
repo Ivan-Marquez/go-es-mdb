@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/ivan-marquez/es-mdb/pkg/storage"
@@ -16,6 +17,8 @@ func init() {
 
 func main() {
 	store, err := storage.New()
+	defer store.DBClient.Disconnect(context.TODO())
+
 	if err != nil {
 		log.Fatal(err)
 	}

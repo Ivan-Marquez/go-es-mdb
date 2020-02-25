@@ -6,15 +6,6 @@ import (
 	"path"
 )
 
-// User schema
-type User struct {
-	FirstName string
-	LastName  string
-	Email     string
-	Gender    string
-	IPAddress string
-}
-
 // ReadCsv accepts a file and returns its content as a multi-dimentional type
 // with lines and each column. Only parses to string type.
 func ReadCsv(filename string) ([][]string, error) {

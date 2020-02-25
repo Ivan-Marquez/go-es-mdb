@@ -16,7 +16,6 @@ func importUsersDataMDB(store *storage.Storage, data []*User) error {
 	client := store.DBClient
 
 	db := client.Database(dbName)
-	defer client.Disconnect(context.TODO())
 
 	var inserts []mongo.WriteModel
 
