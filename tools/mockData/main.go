@@ -33,7 +33,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = importUsersDataES(store, users)
+	err = importUsersDataES(store)
 	if err != nil {
 		log.Fatal(err)
 	}

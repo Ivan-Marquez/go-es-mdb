@@ -43,7 +43,7 @@ func getUsers(store *storage.Storage) ([]*User, error) {
 	return users, nil
 }
 
-func importUsersDataES(store *storage.Storage, users []*User) error {
+func importUsersDataES(store *storage.Storage) error {
 	var (
 		r  map[string]interface{}
 		wg sync.WaitGroup
@@ -64,15 +64,15 @@ func importUsersDataES(store *storage.Storage, users []*User) error {
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		return fmt.Errorf("Error parsing the response body: %s", err)
 	}
-	// Print client and server version numbers.
+
 	log.Printf("Importing data to ElasticSearch")
 
-	md, err := getUsers(store)
+	users, err := getUsers(store)
 	if err != nil {
 		return fmt.Errorf("Error getting data from MongoDB: %v", err)
 	}
 
-	for i, user := range md {
+	for i, user := range users {
 		wg.Add(1)
 
 		go func(i int, u *User) error {
