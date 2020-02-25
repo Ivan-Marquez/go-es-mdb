@@ -1,6 +1,7 @@
 package search
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,15 +21,33 @@ type Handler struct {
 func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
+	keys, ok := r.URL.Query()["term"]
+
+	if !ok || len(keys[0]) < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Bad request. Missing term parameter")
+		return
+	}
+
+	term := keys[0]
+
 	switch r.Method {
+	case http.MethodGet:
+		fallthrough
 	case http.MethodPost:
+		users, err := ESSearch(h.Client, term)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+		}
+
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Initial response"))
+		encoder := json.NewEncoder(w)
+		encoder.Encode(&users)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Bad request")
 	}
-
 }
 
 // SetupRoutes registers handles for API endpoints

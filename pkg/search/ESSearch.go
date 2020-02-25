@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
 // User schema
 type User struct {
+	ID        string
 	FirstName string
 	LastName  string
 	Email     string
@@ -33,7 +33,7 @@ func ESSearch(client *elasticsearch.Client, term string) ([]*User, error) {
 				"fields": []string{
 					"Email", "FirstName", "LastName", "IPAddress",
 				},
-				"query": term,
+				"query": fmt.Sprintf("*%s*", term),
 			},
 		},
 	}
@@ -71,12 +71,20 @@ func ESSearch(client *elasticsearch.Client, term string) ([]*User, error) {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
 
-	// TODO: convert hits to User struct
-	// for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
-	// 	log.Printf(" * ID=%s, %s", hit.(map[string]interface{})["_id"], hit.(map[string]interface{})["_source"])
-	// }
+	var users []*User
+	for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
+		src := hit.(map[string]interface{})["_source"]
+		ID := hit.(map[string]interface{})["_id"].(string)
 
-	log.Println(strings.Repeat("=", 37))
+		users = append(users, &User{
+			ID:        ID,
+			Email:     src.(map[string]interface{})["Email"].(string),
+			FirstName: src.(map[string]interface{})["FirstName"].(string),
+			LastName:  src.(map[string]interface{})["LastName"].(string),
+			Gender:    src.(map[string]interface{})["Gender"].(string),
+			IPAddress: src.(map[string]interface{})["IPAddress"].(string),
+		})
+	}
 
-	return []*User{}, nil
+	return users, nil
 }
