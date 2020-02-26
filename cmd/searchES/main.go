@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	logger := log.New(os.Stdout, "searchService ", log.LstdFlags|log.Lshortfile)
+	logger := log.New(os.Stdout, "searchES ", log.LstdFlags|log.Lshortfile)
 	store, err := storage.New()
 	if err != nil {
 		log.Fatal(err)
