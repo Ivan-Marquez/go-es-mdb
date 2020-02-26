@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   elasticsearch:
+    container_name: es
     image: elasticsearch:7.5.1
     ports:
       - 9200:9200
@@ -33,6 +34,14 @@ services:
         'rs0',
         '--storageEngine=wiredTiger',
       ]
+
+  kibana:
+    container_name: kibana
+    image: kibana:7.5.1
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
 
 volumes:
   es-data:
