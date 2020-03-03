@@ -10,27 +10,31 @@ import (
 // DecodedStream represents a MongoDB change stream
 type DecodedStream map[string]interface{}
 
-// TODO: description
+// DecodeResult represents the result of decoding
+// a MongoDB change stream
 type DecodeResult struct {
 	ID  string
 	Doc interface{}
 }
 
-// TODO: description
+// Decoder interface
 type Decoder interface {
-	DecodeStream(s *mongo.ChangeStream, d DecodedStream) *DecodeResult // TODO: description
+	DecodeStream(s *mongo.ChangeStream, d DecodedStream) *DecodeResult // method to decode a MongoDB change stream
 }
+
+// StreamHandler handles MongoDB change stream
+type StreamHandler func(cs *mongo.ChangeStream)
 
 // User schema
 type User struct {
-	FirstName string
-	LastName  string
-	Email     string
-	Gender    string
-	IPAddress string
+	FirstName string `bson:"firstName"`
+	LastName  string `bson:"lastName"`
+	Email     string `bson:"email"`
+	Gender    string `bson:"gender"`
+	IPAddress string `bson:"ipAddress"`
 }
 
-// TODO: description
+// DecodeStream decodes a MongoDB change stream
 func (u *User) DecodeStream(
 	s *mongo.ChangeStream,
 	d DecodedStream,
@@ -42,7 +46,7 @@ func (u *User) DecodeStream(
 	fd, ok := d["fullDocument"]
 
 	if !ok {
-		// TODO: what if fullDocument is not available?
+		panic("fullDocument field on change stream required for this operation")
 	}
 
 	docID := fd.(DecodedStream)["_id"].(primitive.ObjectID).Hex()

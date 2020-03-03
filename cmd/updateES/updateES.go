@@ -11,7 +11,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-type updateResult struct {
+type opResult struct {
 	status string
 	err    error
 }
@@ -21,8 +21,8 @@ type doc struct {
 	Upsert *User `json:"upsert"`
 }
 
-// TODO: refactor! this function shouldn't accept a User argument. Index name should be a parameter!
-func updateES(esClient *elasticsearch.Client, ID string, u *User, ch chan<- *updateResult) error {
+// updateESUser updates a document on ElasticSearch (user index)
+func updateESUser(esClient *elasticsearch.Client, ID string, u *User, ch chan<- *opResult) error {
 	body, _ := json.Marshal(doc{
 		Doc:    u,
 		Upsert: u,
@@ -39,26 +39,26 @@ func updateES(esClient *elasticsearch.Client, ID string, u *User, ch chan<- *upd
 	res, err := req.Do(context.Background(), esClient)
 	if err != nil {
 		log.Println(err)
-		ch <- &updateResult{
+		ch <- &opResult{
 			err: fmt.Errorf("Error sending ES update: %s", err),
 		}
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		ch <- &updateResult{
+		ch <- &opResult{
 			err: fmt.Errorf("[%s] Error updating document ID=%s", res.Status(), ID),
 		}
 	}
 
 	var r map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
-		ch <- &updateResult{
+		ch <- &opResult{
 			err: fmt.Errorf("Error parsing the response body: %v", err),
 		}
 	}
 
-	ch <- &updateResult{
+	ch <- &opResult{
 		status: fmt.Sprintf("ES document %s update status: %s", ID, r["result"].(string)),
 	}
 
