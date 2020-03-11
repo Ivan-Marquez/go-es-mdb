@@ -1,4 +1,4 @@
-package server
+package rest
 
 import (
 	"crypto/tls"
@@ -6,19 +6,14 @@ import (
 	"time"
 )
 
-func New(mux *http.ServeMux, serverAddress string) *http.Server {
-	// See https://blog.cloudflare.com/exposing-go-on-the-internet/ for details
-	// about these settings
+// NewServer returns an HTTP server with all required configuration
+// See https://blog.cloudflare.com/exposing-go-on-the-internet/ for details about these settings
+func NewServer(mux *http.ServeMux, serverAddress string) *http.Server {
 	tlsConfig := &tls.Config{
-		// Causes servers to use Go's default cipher suite preferences,
-		// which are tuned to avoid attacks. Does nothing on clients.
-		PreferServerCipherSuites: true,
-		// Only use curves which have assembly implementations
-		CurvePreferences: []tls.CurveID{
+		PreferServerCipherSuites: true, // Causes servers to use Go's default cipher suite preferences, which are tuned to avoid attacks.
+		CurvePreferences: []tls.CurveID{ // Only use curves which have assembly implementations
 			tls.CurveP256,
-			tls.X25519, // Go 1.8 only
 		},
-
 		MinVersion: tls.VersionTLS12,
 		CipherSuites: []uint16{
 			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
@@ -29,6 +24,7 @@ func New(mux *http.ServeMux, serverAddress string) *http.Server {
 			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 		},
 	}
+
 	srv := &http.Server{
 		Addr:         serverAddress,
 		ReadTimeout:  5 * time.Second,
@@ -37,5 +33,6 @@ func New(mux *http.ServeMux, serverAddress string) *http.Server {
 		TLSConfig:    tlsConfig,
 		Handler:      mux,
 	}
+
 	return srv
 }
