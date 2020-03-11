@@ -3,10 +3,9 @@ package main
 import (
 	"log"
 
+	"github.com/ivan-marquez/es-mdb/pkg/domain"
 	"github.com/ivan-marquez/es-mdb/pkg/storage"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -18,39 +17,33 @@ func init() {
 }
 
 func main() {
-	store, err := storage.New()
+	store, err := storage.NewStorage()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	col := "user"
-	pipeline := mongo.Pipeline{
-		bson.D{primitive.E{
-			Key: "$match", Value: bson.D{primitive.E{
-				Key: "operationType", Value: bson.D{primitive.E{
-					Key: "$in", Value: []string{"insert", "update"},
-				}},
-			}},
-		}},
-	}
-
 	sh := func(cs *mongo.ChangeStream) {
-		user := new(User)
-		var ds DecodedStream
-		decoded := user.DecodeStream(cs, ds)
+		user := new(domain.User)
 
-		ch := make(chan *opResult, 1)
-		go updateESUser(store.ESClient, decoded.ID, decoded.Doc.(*User), ch)
+		var ds storage.DecodedStream
+		mdbu := storage.MDBUser(*user)
+		decoded := mdbu.DecodeStream(cs, ds)
 
-		res := <-ch
-		if res.err != nil {
-			log.Printf("Error updating ES: %v", res.err)
+		res, err := store.UpdateUser(decoded.ID, decoded.Doc.(*domain.User))
+		if err != nil {
+			log.Printf("Error updating ES: %v", err)
 			log.Println("Storing failed update on database")
-			HandleFailedUpdates(store.DBClient, decoded)
+			r, err := store.HandleFailedUpdates(decoded)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			log.Printf("%s", r.InsertedID.(string))
 		}
 
-		log.Println(res.status)
+		log.Println(res)
 	}
 
-	ChangeStreamListener(store.DBClient, col, pipeline, sh)
+	store.ChangeStreamListener(col, sh)
 }
