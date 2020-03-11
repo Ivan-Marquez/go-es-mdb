@@ -4,6 +4,8 @@ import (
 	"encoding/csv"
 	"os"
 	"path"
+
+	"github.com/ivan-marquez/es-mdb/pkg/domain"
 )
 
 // ReadCsv accepts a file and returns its content as a multi-dimentional type
@@ -24,7 +26,7 @@ func ReadCsv(filename string) ([][]string, error) {
 	return rows, nil
 }
 
-func getMockData() ([]*User, error) {
+func getMockData() ([]*domain.User, error) {
 	dir, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -35,9 +37,9 @@ func getMockData() ([]*User, error) {
 		return nil, err
 	}
 
-	var data []*User
+	var data []*domain.User
 	for _, row := range rows[1:] {
-		data = append(data, &User{
+		data = append(data, &domain.User{
 			FirstName: row[0],
 			LastName:  row[1],
 			Email:     row[2],
