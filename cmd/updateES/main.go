@@ -43,7 +43,7 @@ func main() {
 		go updateESUser(store.ESClient, decoded.ID, decoded.Doc.(*User), ch)
 
 		res := <-ch
-		if res.err == nil {
+		if res.err != nil {
 			log.Printf("Error updating ES: %v", res.err)
 			log.Println("Storing failed update on database")
 			HandleFailedUpdates(store.DBClient, decoded)
