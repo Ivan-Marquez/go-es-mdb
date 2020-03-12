@@ -49,12 +49,12 @@ func (s *Storage) GetAllUsers() ([]*domain.User, error) {
 func (s *Storage) GetUsersByTerm(term string) ([]*domain.User, error) {
 	var (
 		buf bytes.Buffer
-		r   DecodedStream
+		r   map[string]interface{}
 	)
 
-	query := DecodedStream{
-		"query": DecodedStream{
-			"query_string": DecodedStream{
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"query_string": map[string]interface{}{
 				"fields": []string{
 					"Email", "FirstName", "LastName", "IPAddress",
 				},
@@ -80,12 +80,12 @@ func (s *Storage) GetUsersByTerm(term string) ([]*domain.User, error) {
 	defer res.Body.Close()
 
 	if res.IsError() {
-		var e DecodedStream
+		var e map[string]interface{}
 		if err := json.NewDecoder(res.Body).Decode(&e); err == nil {
 			return nil, fmt.Errorf("[%s] %s: %s",
 				res.Status(),
-				e["error"].(DecodedStream)["type"],
-				e["error"].(DecodedStream)["reason"],
+				e["error"].(map[string]interface{})["type"],
+				e["error"].(map[string]interface{})["reason"],
 			)
 		}
 
@@ -97,9 +97,9 @@ func (s *Storage) GetUsersByTerm(term string) ([]*domain.User, error) {
 	}
 
 	var users []*domain.User
-	for _, hit := range r["hits"].(DecodedStream)["hits"].([]interface{}) {
-		src := hit.(DecodedStream)["_source"]
-		ID := hit.(DecodedStream)["_id"].(string)
+	for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
+		src := hit.(map[string]interface{})["_source"]
+		ID := hit.(map[string]interface{})["_id"].(string)
 
 		docID, err := primitive.ObjectIDFromHex(ID)
 		if err != nil {
@@ -108,11 +108,11 @@ func (s *Storage) GetUsersByTerm(term string) ([]*domain.User, error) {
 
 		users = append(users, &domain.User{
 			ID:        &docID,
-			Email:     src.(DecodedStream)["Email"].(string),
-			FirstName: src.(DecodedStream)["FirstName"].(string),
-			LastName:  src.(DecodedStream)["LastName"].(string),
-			Gender:    src.(DecodedStream)["Gender"].(string),
-			IPAddress: src.(DecodedStream)["IPAddress"].(string),
+			Email:     src.(map[string]interface{})["Email"].(string),
+			FirstName: src.(map[string]interface{})["FirstName"].(string),
+			LastName:  src.(map[string]interface{})["LastName"].(string),
+			Gender:    src.(map[string]interface{})["Gender"].(string),
+			IPAddress: src.(map[string]interface{})["IPAddress"].(string),
 		})
 	}
 
@@ -144,7 +144,7 @@ func (s *Storage) UpdateUser(ID string, u *domain.User) (string, error) {
 		return "", fmt.Errorf("[%s] Error updating document ID=%s", res.Status(), ID)
 	}
 
-	var r DecodedStream
+	var r map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		return "", fmt.Errorf("Error parsing the response body: %v", err)
 	}

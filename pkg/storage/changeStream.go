@@ -15,7 +15,7 @@ import (
 // DecodeStream decodes a MongoDB change stream
 func (u *MDBUser) DecodeStream(
 	s *mongo.ChangeStream,
-	d DecodedStream,
+	d map[string]interface{},
 ) *DecodeResult {
 	if e := s.Decode(&d); e != nil {
 		log.Printf("error decoding: %s", e)
@@ -27,14 +27,14 @@ func (u *MDBUser) DecodeStream(
 		panic("fullDocument field on change stream required for this operation")
 	}
 
-	docID := fd.(DecodedStream)["_id"].(primitive.ObjectID).Hex()
+	docID := fd.(map[string]interface{})["_id"].(primitive.ObjectID).Hex()
 
 	u = &MDBUser{
-		FirstName: fd.(DecodedStream)["firstName"].(string),
-		LastName:  fd.(DecodedStream)["lastName"].(string),
-		Email:     fd.(DecodedStream)["email"].(string),
-		Gender:    fd.(DecodedStream)["gender"].(string),
-		IPAddress: fd.(DecodedStream)["ipAddress"].(string),
+		FirstName: fd.(map[string]interface{})["firstName"].(string),
+		LastName:  fd.(map[string]interface{})["lastName"].(string),
+		Email:     fd.(map[string]interface{})["email"].(string),
+		Gender:    fd.(map[string]interface{})["gender"].(string),
+		IPAddress: fd.(map[string]interface{})["ipAddress"].(string),
 	}
 
 	return &DecodeResult{

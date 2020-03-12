@@ -18,7 +18,7 @@ import (
 // to "users" ElasticSearch index
 func (s *Storage) ImportUsersDataES(users []*domain.User) error {
 	var (
-		r  DecodedStream
+		r  map[string]interface{}
 		wg sync.WaitGroup
 	)
 
@@ -53,8 +53,8 @@ func (s *Storage) ImportUsersDataES(users []*domain.User) error {
 }
 
 // indexDocument indexes the passed document in ElasticSearch
-func (s *Storage) indexDocument(ID string, user *domain.User) (DecodedStream, error) {
-	// Build the request body.
+func (s *Storage) indexDocument(ID string, user *domain.User) (map[string]interface{}, error) {
+	// Build the request body
 	body, _ := json.Marshal(user)
 
 	// Set up the request object.
@@ -76,8 +76,8 @@ func (s *Storage) indexDocument(ID string, user *domain.User) (DecodedStream, er
 		return nil, fmt.Errorf("[%s] Error indexing document ID=%s", res.Status(), ID)
 	}
 
-	// Deserialize the response into a DecodedStream
-	var r DecodedStream
+	// Deserialize the response into a map[string]interface{}
+	var r map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		return nil, fmt.Errorf("Error parsing the response body: %s", err)
 	}

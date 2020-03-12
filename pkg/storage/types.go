@@ -30,6 +30,3 @@ type doc struct {
 	Doc    *domain.User `json:"doc"`
 	Upsert *domain.User `json:"upsert"`
 }
-
-// DecodedStream for Json decoding
-type DecodedStream map[string]interface{}

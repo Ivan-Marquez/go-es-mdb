@@ -26,11 +26,12 @@ func main() {
 	sh := func(cs *mongo.ChangeStream) {
 		user := new(domain.User)
 
-		var ds storage.DecodedStream
+		var ds map[string]interface{}
 		mdbu := storage.MDBUser(*user)
 		decoded := mdbu.DecodeStream(cs, ds)
+		doc := domain.User(*decoded.Doc.(*storage.MDBUser))
 
-		res, err := store.UpdateUser(decoded.ID, decoded.Doc.(*domain.User))
+		res, err := store.UpdateUser(decoded.ID, &doc)
 		if err != nil {
 			log.Printf("Error updating ES: %v", err)
 			log.Println("Storing failed update on database")
