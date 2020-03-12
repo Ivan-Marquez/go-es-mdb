@@ -32,7 +32,7 @@ func getMockData() ([]*domain.User, error) {
 		return nil, err
 	}
 
-	rows, err := ReadCsv(path.Join(dir, "tools", "mockData", "users.csv"))
+	rows, err := ReadCsv(path.Join(dir, "cmd", "dataImport", "data", "users.csv"))
 	if err != nil {
 		return nil, err
 	}
